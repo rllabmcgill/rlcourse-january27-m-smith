@@ -1,0 +1,489 @@
+\documentclass{beamer}
+%
+% Choose how your presentation looks.
+%
+% For more themes, color themes and font themes, see:
+% http://deic.uab.es/~iblanes/beamer_gallery/index_by_theme.html
+%
+\mode<presentation>
+{
+  \usetheme{default}      % or try Darmstadt, Madrid, Warsaw, ...
+  \usecolortheme{default} % or try albatross, beaver, crane, ...
+  \usefonttheme{default}  % or try serif, structurebold, ...
+  \setbeamertemplate{navigation symbols}{}
+  \setbeamertemplate{caption}[numbered]
+} 
+
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+
+% COMMANDS %
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\abs}[1]{\left| #1\right|}
+\newcommand{\eval}[1]{\mathbb{E}\left[#1\right]}
+\newcommand{\var}[1]{\text{Var}\left(#1\right)}
+\newcommand{\cov}[1]{\text{Cov}\left(#1\right)}
+\newcommand{\prob}[1]{\mathbb{P}\left(#1\right)}
+\newcommand{\borel}{\mathcal{B}([0,1])}
+\newcommand{\borelR}{\mathcal{B}(\mathbb{R})}
+\newcommand{\sigalg}[1]{\sigma\left(#1\right)}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\G}{\mathcal{G}}
+\newcommand{\leb}[1]{\mu_{\text{Leb}}\left(#1\right)}
+\newcommand{\limn}{\lim_{n\rightarrow\infty}}
+\renewcommand{\vec}[1]{\mathbf{#1}}
+
+\title{Policy Iteration: Computational Complexity and Relation to the Simplex Algorithm}
+\subtitle{COMP 767}
+\author{Matthew Smith \& Pascale Gourdeau}
+\date{January 27th, 2017}
+\institute{Summary of: \emph{The Simplex and Policy-Iteration Methods are Strongly Polynomial for the Markov Decision Problem with a Fixed Discount Rate} by Yinyu Ye}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% Uncomment these lines for an automatically generated outline.
+%\begin{frame}{Outline}
+%  \tableofcontents
+%\end{frame}
+
+
+%----------------------------------------------------------------------
+
+\begin{frame}{Overview}
+
+\tableofcontents
+\end{frame}
+
+%----------------------------------------------------------------------
+\section{Introduction}
+\subsection{Problem Setting}
+\begin{frame}{Notation and Problem Setting}
+
+\begin{itemize}[<+->]
+\item <1->The MDP has $m$ states and a discount factor $\gamma$.
+\item <2->For each transition $s\overset{a}{\longrightarrow}s'$, there is an associated \emph{cost}, instead of a reward, and so the goal is to \emph{minimize} the expected discounted cost.
+\item <3->We assume that at each state $s$ there is a specific set of actions $\mathcal{A}_s$ that can be performed, with $|\mathcal{A}_s|=k_s$ and $$n:=\sum_{s=1}^mk_s$$.
+\item <4->We assume that the transition probabilities, represented as a matrix $\vec{P}$, and the cost function $c(s',a|s)$ are both known. 
+\end{itemize}
+
+\end{frame}
+
+%----------------------------------------------------------------------
+
+\begin{frame}{Polynomial vs Strongly Polynomial} 
+\begin{itemize}
+\item \emph{Polynomial:} The number of arithmetic operations needed to compute an (optimal) solution is bounded by a polynomial function in the number of input data and their bit-sizes.
+\item \emph{Strongly Polynomial:} The number of arithmetic operations needed to compute an (optimal) solution is bounded by a polynomial function in the number of input data only.
+\item In our case, finding the optimal policy is done in $poly(n,m)$ time.
+\end{itemize}
+\end{frame}
+
+%----------------------------------------------------------------------
+\begin{frame}{Previous results}
+
+Given that there are exactly $k$ actions in each state, and $L(\vec{P},\vec{c},\gamma)$ is the bit-size of the MDP input data to the LP, 
+\begin{center}
+\includegraphics[scale=0.38]{complexity_table.png}
+\end{center}
+\end{frame}
+
+%----------------------------------------------------------------------
+\subsection{Main Results}
+\begin{frame}{Main Results}
+\begin{itemize}
+\item When framing the discounted MDP problem of finding an an optimal policy $\pi^*$ as an LP, the Simplex method that solves the LP is exactly policy iteration. 
+\item The Simplex/policy iteration method is polynomial in the number of states and actions:
+$$\frac{m^2(k-1)}{1-\gamma}\cdot\log\left(\frac{m^2}{1-\gamma}\right)$$
+\end{itemize}
+\end{frame}
+
+%----------------------------------------------------------------------
+
+\section{Background}
+
+%----------------------------------------------------------------------
+\subsection{Linear Programming}
+\begin{frame}{Linear Programming Refresher}
+\begin{itemize}
+  \item We seek to optimize some linear function subject to linear constraints.
+  \item This can be written as:
+  \begin{equation*}
+  \begin{array}{ll@{}ll@{}rr}
+  \text{minimize}  & \displaystyle \sum_{i=1}^n c_i x_i\\
+  \text{subject to}& \displaystyle \sum_{i=1}^n a_{ji} x_i = b_{j} & \forall i \in 1,...,n \textrm{ and } j \in 1,...m \\
+                   & x_i \geq 0 & \forall i \in 1,...,n
+  \end{array}
+  \end{equation*}
+  \item  or equivalently, in vector form:
+  \begin{equation*}
+  \begin{array}{ll@{}ll}
+  \text{minimize}  & \displaystyle \vec{c}^\top\vec{x}\\
+  \text{subject to}& \displaystyle \vec{A}\vec{x}=b\\
+                   & \vec{x}\geq 0
+  \end{array}
+  \end{equation*}
+
+
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Important Ideas In LP}
+  \begin{description}
+    \item[Feasible Solution:] \hfill \\ An allocation of values $\vec{x}$, such that all constraints are satisfied.
+    \item[Basic Feasible Solution:] \hfill \\ A feasible solution, such
+    that there are only $\mathit{rank}(\vec{A})$ nonzero values of $\vec{x}$. These correspond to extreme points in the convex set defined by the constraints.
+    \item[Dual Form:] \hfill \\ Using Lagrange method, rewrite optimization as a function of constraints. Using notation from earlier, this gives us:
+
+    \begin{equation*}
+    \begin{array}{ll@{}ll}
+    \text{maximize}  & \displaystyle -\vec{b}^\top\vec{y}\\
+    \text{subject to}& \displaystyle \vec{A}^\top\vec{y} + \vec{c} \geq \vec{0}
+    \end{array}
+    \end{equation*}
+
+  \end{description}
+\end{frame}
+
+%----------------------------------------------------------------------
+
+\begin{frame}{The Simplex Method}
+\begin{itemize}
+  \item Every optimal solution to the LP corresponds to a BFS
+  \item Starting from a BFS, we note that the columns of $\vec{A}$ associated with nonzero values of $\vec{x}$ form a basis for $\mathbb{R}^m$
+  \item We express some other column of $\vec{A}$, $\vec{a}_{\nu}$ as a linear combination of these basis vectors, and use the coefficients, $\vec{y}_\nu$ to compute:
+  $$\bar{c}_\nu = c_\nu - \vec{c}^\top\vec{y}_\nu$$
+  \item And replace some existing vector of the basis with the vector $\vec{a}_f$ associated with $f = \arg\!\min_i\bar{\vec{c}}$ if $\bar{c}_f < 0$
+  \item We do this by choosing $$\theta = \min. \frac{x_i}{y_{if}}$$
+  and modifying all variables according to
+  $$x_i^{t+1} = x_i^{t} - \theta y_{if}$$
+
+\end{itemize}
+\end{frame}
+
+%----------------------------------------------------------------------
+
+\begin{frame}{Linear Program Representation of the MDP}
+\begin{itemize}[<+->]
+\item Primal form:
+\begin{equation*}
+\begin{array}{ll@{}ll}
+\text{minimize}  & \displaystyle \vec{c}^\top\vec{x}\\
+\text{subject to}& \displaystyle \vec{Ax}=\vec{b}\\
+                         &  \displaystyle\vec{x}\geq\vec{0}
+\end{array}
+\end{equation*}
+
+\item  Dual form:
+\begin{equation*}
+\begin{array}{ll@{}ll}
+\text{maximize}  & \displaystyle \vec{b}^\top\vec{y}\\
+\text{subject to}& \displaystyle \vec{s}=\vec{c}-\vec{A}^\top\vec{y}\geq \vec{0}
+\end{array}
+\end{equation*}
+\end{itemize}
+\end{frame}
+
+%----------------------------------------------------------------------
+\subsection{LP Representation of MDP}
+\begin{frame}{Linear Program Representation of the MDP}
+\begin{itemize}[<+->]
+\item <1-> Primal form:
+\begin{equation*}
+\begin{array}{ll@{}ll}
+\text{minimize}  & \displaystyle \vec{c}^\top\vec{x}\\
+\text{subject to}& \displaystyle \vec{Ax}=\vec{b}\\
+                         &  \displaystyle\vec{x}\geq\vec{0}
+\end{array}
+\end{equation*}
+\item <2-> $\vec{b}=\vec{1}\in\R^{m}$ 
+\item <3-> $\vec{c}\in\R^{ n}$ such that if $a\in \mathcal{A}_s$ then $c_a=\sum_{s'}p(s'|s,a)c(s'|s,a)$
+\item <4-> $\vec{A}=\vec{E}-\gamma\vec{P}\in\R^{m\times n}$ with rank $m$, where 
+\begin{itemize}
+\item $P_{s',a}=p(s'|s,a)$ for $s'=1,\dots,m$.
+\item $E_{s,a}=
+\begin{cases}
+  1 & \text{if } a\in\mathcal{A}_s \\
+  0          & \text{otherwise}
+\end{cases}$
+\end{itemize}
+
+\end{itemize}
+\end{frame}
+
+
+%----------------------------------------------------------------------
+
+\section{Results}
+%----------------------------------------------------------------------
+
+\begin{frame}{Lemma 1}
+\begin{enumerate}
+\item \emph{There is a one-to-one correspondence between a (stationary) policy of the original discounted MDP and a basic feasible solution of the discounted MDP primal.}
+%
+
+\only<2>{\vspace{0.3cm} \emph{Proof:}
+We need the policy to both: 1) specify an action in every state,
+and 2) each state must have exactly one action.
+
+Let $\pi$ index the basis set of a basic feasible solution for
+the primal problem $|\pi| = m$.
+
+By the constraint, the $s$th row of $\vec{A}$ satisfies 
+$$1 = \sum_{d \in \pi} a_{sm}x_{d}^{\pi}$$
+
+but for all actions $d \not \in \mathcal{A}_s$, 
+$a_{sm} \leq 0$, so if there is some state $s$ such that 
+$\forall d \in \pi: d \not \in \mathcal{A}_s$, we have
+$$\sum_{d \in \pi, d \not \in \mathcal{A}_s} a_{sm}x_{d}^{\pi} \leq 0 $$ which must violate one of the constraints.
+} 
+\only<3>{
+  \emph{\vspace{0.3cm} Proof (contd.):}
+
+  If we have an action in every state (as just shown), then
+  since $|\pi| = m$, each state specifies only one action.
+}
+\item<4-> \emph{Let $\vec{x}^\pi$ be a basic feasible solution of the discounted MDP primal. Then any basic variables, say $\vec{x}_s^\pi$, has its value 
+$$1\leq\vec{x}_s^\pi\leq\frac{m}{1-\gamma}\enspace.$$}
+%
+\item<5-> \emph{The feasible set of the discounted MDP primal is bounded. More precisely, for every feasible $\vec{x}\geq0$,
+$$\vec{e}^\top\vec{x}=\frac{m}{1-\gamma}\enspace.$$}
+\end{enumerate}
+\end{frame}
+
+%----------------------------------------------------------------------
+
+\begin{frame}{Lemma 2}
+\emph{
+Let both the primal and dual LPs be feasible. Then the is a unique partition $\set{\mathcal{P},\mathcal{O}}$ of the actions
+%
+\footnote{$\mathcal{P}\subseteq\set{1,2\dots,n}$ and $\mathcal{O}\subseteq\set{1,2,\dots,n}$, with $\mathcal{P}\cup\mathcal{O}=\set{1,2,\dots,n}$ and$\mathcal{P}\cap\mathcal{O}=\emptyset$}
+%
+such that for all optimal solution pairs $(\vec{x}^*,\vec{s}^*)$,
+$$x_a^*=0\;\forall j\in\mathcal{O}, \text{ and } s_{a'}^*=0 \;\forall a'\in\mathcal{P},$$
+and there is at least one optimal solution pair $(\vec{x}^*,\vec{s}^*)$ that is strictly complementary, 
+$$x_a^*,\;\forall j\in\mathcal{P}, \text{ and } s_{a'}^*>0\;\forall a'\in\mathcal{O},$$
+for the MDP linear program. 
+In particular, every optimal policy $\pi^*\subseteq\mathcal{P}$ so that $|\mathcal{P}|\geq m$ and  $|\mathcal{O}|\leq n- m$.
+}
+\end{frame}
+
+
+%----------------------------------------------------------------------
+
+\begin{frame}{Simplex as Policy Iteration}
+We reframe the primal as the equivalent LP:
+\begin{equation*}
+\begin{array}{ll@{}ll}
+\text{minimize}  & \displaystyle \bar{\vec{c}}_{\nu}^\top\vec{x}_{\nu} + \bar{\vec{c}}_{\pi}^\top (A_\pi)^{-1}\vec{e}\\
+\text{subject to}& \displaystyle \vec{A}_{\pi}\vec{x}_{\pi} + 
+\vec{A}_{\nu}\vec{x}_{\nu} =\vec{e}\\
+                         &  \displaystyle\vec{x}\geq\vec{0}
+\end{array}
+\end{equation*}
+where $\bar{\vec{c}}$ is the \textit{reduced cost vector} $$\bar{\vec{c}}_{\pi} = \vec{0} \hspace{1cm} \bar{\vec{c}}_{\nu} =
+\vec{c}_{\nu} - \vec{A}_{\nu}^\top\vec{y}_{\pi} \hspace{1cm} \vec{y}_{\pi} = (\vec{A}_{\pi}^\top)^{-1}\vec{c}_{\pi} $$
+
+\iffalse
+In linear programming, $\bar{\vec{c}}$ is called the \textit{reduced cost} vector, and expresses the change needed in the constraint coefficients in order for that variable to be included in the BFS. We can also view this as advantage.
+\fi
+
+ If  $\bar{\vec{c}} \geq \vec{0}$, we are at the optimal policy. Otherwise there is some minimum reduced cost variable that is negative, meaning that under the current policy, some other action in a specific state leads to lower future discounted cost, which suggests this action should be taken instead. We substitute the action corresponding to the minimum reduced cost and substitute it for the existing one at that state in the basis $\vec{A}_{\pi}$. This corresponds with the minimum reduced cost pivot rule for the simplex algorithm, or 
+ one iteration of minimum reduced cost policy improvement.
+
+\end{frame}
+
+\begin{frame}{Lemma 3}
+\emph{Let $z^{\ast}$ be the optimal objective value of the primal. Then, in any iteration of the Simplex method from current policy $\pi$to new policy $\pi^+$
+$$z^{\ast} \geq \vec{c}^\top \vec{x}^\pi - \frac{m}{1 - \gamma} \cdot \Delta$$
+where $\Delta := - \min \bar{c}_{\nu}$. 
+Moreover,
+$$
+\vec{c}^\top\vec{x}^{\pi^+}−\vec{z}^{\ast} 
+  \leq 
+  \left( 
+    1 − \frac{1-\gamma}{m}
+  \right ) 
+  \left(\vec{c}^\top\vec{x}^{\pi} − \vec{z}^{\ast}\right)
+$$
+Therefore the simplex method generates a sequence of policies, indexed by $t$, such that
+$$
+\vec{c}^\top\vec{x}^{\pi^{t}}−\vec{z}^{\ast} 
+  \leq 
+  \left( 
+    1 − \frac{1-\gamma}{m}
+  \right )^t
+  \left(\vec{c}^\top\vec{x}^{\pi^{0}} − \vec{z}^{\ast}\right)
+$$
+}
+\end{frame}
+\begin{frame}{Proof of Lemma 3}
+We observe that:
+$$\vec{c}^\top\vec{x} = \vec{c}^\top\vec{x^\pi} + \bar{\vec{c}}^\top\vec{x} \geq \vec{c}^\top\vec{x^\pi} - \Delta \vec{e}^\top \vec{x} =  \vec{c}^\top\vec{x^\pi} - \Delta \frac{m}{1-\gamma}$$
+
+which shows the first inequality of the lemma for all $\vec{x}$, including the optimal solution.
+
+Further, since the value of the new basic variable is greater than or equal to 1, the simplex objective is changed by at least $\Delta$, which gives us
+$$\vec{c}^\top \vec{x}^\pi - \vec{c}^\top \vec{x}^{\pi^+} = \Delta x_{j^+}^{\pi^+} \geq \Delta \geq \frac{1-\gamma}{m}\left(
+\vec{c}^\top \vec{x}^{\pi} - z^{\ast}\right)$$
+solving for $\Delta$ in the first inequality and substituting here gives the second. The third follows by induction.
+\end{frame}
+\begin{frame}{Lemma 4}
+\begin{enumerate}[<+->]
+\item \emph{ 
+If a policy $\pi$ is not optimal, then there is a non-optimal state-action $j$ in $\pi\cap\mathcal{O}$ (the current policy) such that
+$$s_j^*\geq \frac{1-\gamma}{m^2}\left(\vec{c}^\top\vec{x}^\pi-z^*\right)\enspace,$$
+where $\mathcal{O}$, together with $\mathcal{P}$, is the strict complementarity partition stated in Lemma 2, and $\vec{s}^*$ is the optimal dual slack vector.
+}
+\item\emph{
+For any sequence of policies $\pi^0,\pi^1,\dots,\pi^t,\dots$ generated by the Simplex method where $\pi^0$ is not optimal, let $j^0\in\pi^0\cap\mathcal{O}$ be the state-action index identified above in the initial policy $\pi^0$. Then, if $j^0\in\pi^t$, we must have
+$$x_{j^0}^{\pi_t}\leq\frac{m^2}{1-\gamma}\cdot\frac{\vec{c}^\top\vec{x}^{\pi^t}-z^*}{\vec{c}^\top\vec{x}^{\pi^0}-z^*}\quad\forall t\geq1\enspace.$$
+}
+\end{enumerate}
+\end{frame}
+
+%----------------------------------------------------------------------
+
+\begin{frame}{Proof of Lemma 4.1}
+Since all non-basic variables of $\vec{x}^\pi$ have zero values:
+\begin{align*}
+\vec{c}^\top\vec{x}-z^* 
+&= \vec{c}^\top\vec{x}- \vec{c}^\top\vec{x}^* && (\text{by definition}) \\
+%
+&= \vec{c}^\top\vec{x}- \vec{e}^\top\vec{y}^* && (\text{strong duality}) \\
+%
+&= (\vec{s}^*)^\top\vec{x}^\pi &&(\text{dual definition})\\
+%
+&= \sum_{j\in\pi}s_j^*x_j^\pi &&
+\end{align*}
+
+Now, there must be action $j\in\pi$ s.t.
+\begin{equation*}
+s_j^*x_j^\pi\geq\frac{1}{m}\left(\vec{c}^\top\vec{x}^\pi-z^* \right)
+\end{equation*}
+
+\end{frame}
+
+
+%----------------------------------------------------------------------
+
+\begin{frame}{Proof of Lemma 4.1 Cont'd}
+
+( Lemma 1 $\implies$) $1\leq x_j^\pi\leq\frac{m}{1-\gamma}$. Then
+
+\begin{align*}
+s_j^* &\geq \frac{1-\gamma}{m^2}\left(\vec{c}^\top\vec{x}^\pi-z^* \right)>0\enspace,
+\end{align*}
+and $j\in\mathcal{O}$ from Lemma 2.
+
+\end{frame}
+
+
+%----------------------------------------------------------------------
+
+\begin{frame}{Proof of Lemma 4.2}
+
+Suppose $\pi_0$ is non-optimal. 
+Then, using Lemma 4.1, let $j^0\in\pi^0\cap\mathcal{O}$ be the state-action pair index such that 
+$$
+s_{j_0}^* 
+\geq \frac{1-\gamma}{m^2}\left(\vec{c}^\top\vec{x}^{\pi^0}-z^* \right)\enspace.\enspace.$$
+If $j^0\in\pi^t$ for some $t\geq1$, where $\pi^t$ is generated by the Simplex method, 
+$$\vec{c}^\top\vec{x}^{\pi^t}-z^*
+=(\vec{s}^*)^\top\vec{x}^{\pi^t} 
+\geq s_{j^0}^*x_{j_0}^{\pi^t}\enspace.$$
+Then, 
+$$
+x_{j_0}^{\pi^t}\leq\frac{\vec{c}^\top\vec{x}^{\pi^t}-z^*}{s_{j^0}^*}
+\leq\frac{m^2}{1-\gamma}\cdot\frac{\vec{c}^\top\vec{x}^{\pi^t}-z^*}{\vec{c}^\top\vec{x}^{\pi^0}-z^*}\enspace,
+$$
+as required.
+\end{frame}
+
+%----------------------------------------------------------------------
+
+\begin{frame}{Theorem 1}
+\emph{
+Let $\pi^0$ be any given non-optimal policy. 
+Then there is a state-action $j^0\in\pi^0\cap\mathcal{O}$, i.e. a non-optimal policy action $j^0$ in policy $\pi^0$ that would never appear in any of the policies generated by the Simplex method after $T:=\left\lceil\frac{m}{1-\gamma}\cdot\log\left(\frac{m^2}{1-\gamma}\right)\right\rceil$ iterations starting from $\pi^0$.
+}
+\end{frame}
+
+%----------------------------------------------------------------------
+
+\begin{frame}{Proof of Theorem 1}
+
+( Lemma 3 $\implies$) after $t$ iterations of the simplex method:
+$$\frac{\vec{c}^\top\vec{x}^{\pi^t}-z^*}{\vec{c}^\top\vec{x}^{\pi^0}-z^*}
+\leq\left(1-\frac{1-\gamma}{m}\right)^t$$
+
+So, after $t$ iterations from the initial policy $\pi^0$ with $j^0\in\pi^t$, 
+$$
+x_{j_0}^{\pi^t}
+\leq\frac{m^2}{1-\gamma}\cdot\frac{\vec{c}^\top\vec{x}^{\pi^t}-z^*}{\vec{c}^\top\vec{x}^{\pi^0}-z^*}
+\leq\frac{m^2}{1-\gamma}\left(1-\frac{1-\gamma}{m}\right)^t
+\quad(\dagger)
+\enspace.
+$$
+Now, using the identity $\log(1-y)\leq-y$ for $y<1$ and letting $t>T$, we get that the RHS of $(\dagger)$ is $<1$, implying that $
+x_{j_0}^{\pi^t}<1$ and so contradicting Lemma 1. Then $j^0\notin\pi^t$ for all $t>T$.
+
+\end{frame}
+
+%----------------------------------------------------------------------
+
+\begin{frame}{Theorem 2}
+\emph{
+The simplex, or simple policy-iteration, method with the most-negative-reduced-cost pivoting rule of Dantzig for solving discounted  MDP with a fixed discount rate is a strongly polynomial-time algorithm. 
+Starting from any policy, the method terminates in at most $\frac{m(n-m)}{1-\gamma}\cdot\log\left(\!\frac{m^2}{1-\gamma} \right)$ iterations, where each iteration uses $O(mn)$ arithmetic operations.
+}
+\end{frame}
+
+%----------------------------------------------------------------------
+
+\begin{frame}{Proof of Theorem 2}
+
+\begin{itemize}
+\item The state-action $j^0$ from theorem 1 will never be part of a policy after time $T$. 
+\item Performing iterations, if $\pi^{T+1}$ is not optimal, there exists $j^1\in\pi^{T+1}\cap\mathcal{O}$ with $j^1\neq j^0$ s.t. $j^1\notin\pi^t$ for all $t>2T$, etc.
+\item For each Simplex iteration, we get a better policy.
+\item There are at most $|\mathcal{O}|\leq n-m$ such iterations by Lemma 2. 
+\item This gives running time $\leq\frac{m(n-m)}{1-\gamma}\cdot\log\left(\!\frac{m^2}{1-\gamma} \right)$.
+
+\end{itemize}
+
+\end{frame}
+
+%----------------------------------------------------------------------
+
+\begin{frame}{Corollary 1}
+\emph{
+The original policy-iteration method of Howard for solving the discounted MDP with a fixed discount rate is a strongly polynomial-time algorithm. Starting from any policy, it mterminates in at most $\frac{m(n-m)}{1-\gamma}\cdot\log\left(\!\frac{m^2}{1-\gamma} \right)$ iterations.
+}
+\end{frame}
+
+%----------------------------------------------------------------------
+
+\begin{frame}{Proof of Corollary 1}
+
+\begin{itemize}[<+->]
+\item Lemma 1 and 2 are independent of the method being used.
+\item Given policy $\pi$, the incoming Simplex basic variable $j^+=\arg\min(\vec{c})$ is always an incoming basic variable for policy-iteration.
+\item Lemma 4 holds for policy iteration as well: its consequences hold as long as the state-action with the most-negative-reduced-cost is in the next policy.
+\item Therefore there always exists an action in a non-optimal policy that will never appear after $T$ iterations when doing policy-iteration.
+\begin{center}
+$\implies$ Theorem 1 holds, and the proof is complete.
+\end{center}
+
+\end{itemize}
+\end{frame}
+
+%----------------------------------------------------------------------
+
+\end{document}
+
